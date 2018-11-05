@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<com.aliya.view.fitsys.FitWindowsLinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bc_ffffff" android:fitsSystemWindows="true" android:orientation="vertical" app:fitType="bottom">  
+  <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content"> 
+    <com.aliya.view.fitsys.FitWindowsFrameLayout android:id="@+id/top_bar_white" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/bc_ffffff" android:fitsSystemWindows="true" android:minHeight="@dimen/toolbar_normal_height" app:fitType="top"> 
+      <ImageView android:id="@+id/iv_white_back" android:layout_width="42dp" android:layout_height="@dimen/toolbar_normal_height" android:background="?attr/actionBarItemBackground" android:paddingRight="7dp" android:scaleType="center" android:src="@mipmap/ic_top_bar_back_dark"/>  
+      <TextView android:id="@+id/tv_white_title" style="@style/ToolbarTitle" android:textColor="@color/tc_484848"/>  
+      <ImageView android:id="@+id/iv_white_share" android:layout_width="40dp" android:layout_height="@dimen/toolbar_normal_height" android:layout_gravity="right" android:scaleType="center" android:src="@mipmap/module_core_topbar_share"/>  
+      <View android:layout_width="match_parent" android:layout_height="0.5dp" android:layout_gravity="bottom" android:background="@color/dc_dddddd"/> 
+    </com.aliya.view.fitsys.FitWindowsFrameLayout>  
+    <com.aliya.view.fitsys.FitWindowsFrameLayout android:id="@+id/top_bar_red" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/colorPrimary" android:fitsSystemWindows="true" android:minHeight="@dimen/toolbar_normal_height" app:fitType="top"> 
+      <ImageView android:id="@+id/iv_red_back" android:layout_width="42dp" android:layout_height="@dimen/toolbar_normal_height" android:background="?attr/actionBarItemBackground" android:paddingRight="7dp" android:scaleType="center" android:src="@mipmap/ic_top_bar_back_white"/>  
+      <TextView android:id="@+id/tv_red_title" style="@style/ToolbarTitle" android:textColor="@color/tc_ffffff"/>  
+      <ImageView android:id="@+id/iv_red_share" android:layout_width="40dp" android:layout_height="@dimen/toolbar_normal_height" android:layout_gravity="right" android:layout_marginRight="2dp" android:scaleType="center" android:src="@mipmap/module_core_topbar_share"/> 
+    </com.aliya.view.fitsys.FitWindowsFrameLayout> 
+  </FrameLayout>  
+  <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"> 
+    <com.zjrb.core.ui.widget.web.WebProView android:id="@+id/web_view" android:layout_width="match_parent" android:layout_height="match_parent"/>  
+    <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@android:color/transparent"/> 
+  </FrameLayout> 
+</com.aliya.view.fitsys.FitWindowsLinearLayout>
