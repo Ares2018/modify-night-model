@@ -5,7 +5,6 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
-import javax.print.DocFlavor;
 import java.io.*;
 import java.util.*;
 
@@ -20,6 +19,23 @@ public class App {
         removeIvMaskColor();
         replaceDayAttr();
         createNightFolder();
+
+//        renameNightFile(MODULE_PATH + "mipmap-night-xxhdpi");
+//        renameNightFile(MODULE_PATH + "drawable-night-xxhdpi");
+    }
+
+    private static void renameNightFile(String folderPath) {
+        File folder = new File(folderPath);
+        File[] files = folder.listFiles();
+        if (files != null && files.length > 0) {
+            for (File file : files) {
+                String name = file.getName();
+                if (name.contains("_night")) {
+                    name = name.replace("_night", "");
+                    file.renameTo(new File(folderPath,name));
+                }
+            }
+        }
     }
 
     private static void createNightFolder() {
