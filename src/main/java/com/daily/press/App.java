@@ -17,8 +17,8 @@ public class App {
     private static final String MODULE_PATH = "/Users/lixinke/Documents/workspace/android/daily/LauncherProject/launcher/src/main/res/";
 
     public static void main(String[] args) {
-        removeIvMaskColor();
-        replaceDayAttr();
+//        removeIvMaskColor();
+//        replaceDayAttr();
         createNightFolder();
     }
 
@@ -75,14 +75,14 @@ public class App {
                 String[] temp = mipmapName.split("-");
                 String last = temp[temp.length - 1];
 
-                File nightFolder = new File(MODULE_PATH + "mipmap-night-" + last);
-                if (!nightFolder.exists()) {
-                    nightFolder.mkdir();
-                }
-
-
                 File[] files = mipmap.listFiles();
                 if (files != null && files.length > 0) {
+
+                    File nightFolder = new File(MODULE_PATH + "mipmap-night-" + last);
+                    if (!nightFolder.exists()) {
+                        nightFolder.mkdir();
+                    }
+
                     for (File file : files) {
                         String name = file.getName();
                         String nameTemp = name.substring(0, name.lastIndexOf("."));
@@ -96,34 +96,50 @@ public class App {
     }
 
     private static void createNightDrawable(List<String> drawableValues) {
-        File nightFolder = new File(MODULE_PATH + "drawable-night-xxhdpi");
-        if (!nightFolder.exists()) {
-            nightFolder.mkdir();
-        }
 
-        File drawableFolder = new File(MODULE_PATH + "drawable-xxhdpi");
-        File[] files = drawableFolder.listFiles();
 
-        if (files != null && files.length > 0) {
-            for (File file : files) {
-                String name = file.getName();
-                String nameTemp = name.substring(0, name.lastIndexOf("."));
-                if (!name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
-                    file.renameTo(new File(nightFolder, file.getName()));
-                } else if (name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
-                    List<String> temp = parseSelector(file, "android:drawable");
-                    for (String key : temp) {
-                        for (File sFile : files) {
-                            String sName = sFile.getName();
-                            if (key.equals(sName.substring(0, sName.lastIndexOf(".")))) {
-                                sFile.renameTo(new File(nightFolder, sFile.getName()));
+        File resFolder = new File(MODULE_PATH);
+        File[] drawables = resFolder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return s.startsWith("drawable");
+            }
+        });
+
+        if (drawables != null && drawables.length > 0) {
+            for (File dir : drawables) {
+                String dirName = dir.getName();
+                String[] dirNames = dirName.split("-");
+                String last = dirNames[dirNames.length - 1];
+                File[] files = dir.listFiles();
+
+                if (files != null && files.length > 0) {
+
+                    File nightFolder = new File(MODULE_PATH + "drawable-night-" + last);
+                    if (!nightFolder.exists()) {
+                        nightFolder.mkdir();
+                    }
+
+                    for (File file : files) {
+                        String name = file.getName();
+                        String nameTemp = name.substring(0, name.lastIndexOf("."));
+                        if (!name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+                            file.renameTo(new File(nightFolder, file.getName()));
+                        } else if (name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+                            List<String> temp = parseSelector(file, "android:drawable");
+                            for (String key : temp) {
+                                for (File sFile : files) {
+                                    String sName = sFile.getName();
+                                    if (key.equals(sName.substring(0, sName.lastIndexOf(".")))) {
+                                        sFile.renameTo(new File(nightFolder, sFile.getName()));
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
     }
 
     private static List<String> parseSelector(File inputXml, String themeName) {
