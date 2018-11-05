@@ -14,7 +14,7 @@ import java.util.*;
  */
 public class App {
     private static final String MAIN_THEME = "/Users/lixinke/Documents/workspace/android/daily/MainBuilder/app/src/main/res/values/styles.xml";
-    private static final String MODULE_PATH = "/Users/lixinke/Documents/workspace/android/daily/LauncherProject/launcher/src/main/res/";
+    private static final String MODULE_PATH = "/Users/lixinke/Documents/workspace/android/daily/CoreProject/core/src/main/res/";
 
     public static void main(String[] args) {
         removeIvMaskColor();
@@ -48,7 +48,11 @@ public class App {
 
         List<String> drawableValues = new ArrayList<>();
         for (String key : drawables) {
-            drawableValues.add(nightStyles.get(key).split("/")[1]);
+
+            if (nightStyles.get(key) != null && nightStyles.get(key).split("/").length > 1) {
+                drawableValues.add(nightStyles.get(key).split("/")[1]);
+            }
+
         }
 
         createNightDrawable(drawableValues);
@@ -123,6 +127,7 @@ public class App {
                         if (!name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
                             file.renameTo(new File(nightFolder, file.getName()));
                         } else if (name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+
                             List<String> temp = parseSelector(file, "android:drawable");
                             for (String key : temp) {
                                 for (File sFile : files) {
@@ -140,8 +145,12 @@ public class App {
     }
 
     private static List<String> parseSelector(File inputXml, String themeName) {
+
         List<String> drawables = new ArrayList<>();
         SAXReader saxReader = new SAXReader();
+        if(!inputXml.exists()){
+            return drawables;
+        }
         try {
             Document document = saxReader.read(inputXml);
             Element rootElement = document.getRootElement();
@@ -155,17 +164,17 @@ public class App {
                     }
                 }
             }
-
         } catch (DocumentException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
+
+
         return drawables;
     }
 
     private static void createNightColor(List<String> colors, Map<String, String> nightStyles) {
 
-      Map<String,String> colorMap= parseColor(MODULE_PATH+"values/colors.xml");
-
+        Map<String, String> colorMap = parseColor(MODULE_PATH + "values/colors.xml");
 
 
         File valueNightFolder = new File(MODULE_PATH + "values-night");
@@ -184,8 +193,13 @@ public class App {
                 Element colorElement = element.addElement("color");
                 colorElement.addAttribute("name", color);
                 String value = nightStyles.get(color);
-                value =value .replaceAll("\\s*", "");
-                colorElement.setText(colorMap.get(value.split("/")[1]));
+                if (value != null && value.length() > 0) {
+                    value = value.replaceAll("\\s*", "");
+                    String colorTemp = colorMap.get(value.split("/")[1]);
+                    if (colorTemp != null) {
+                        colorElement.setText(colorTemp);
+                    }
+                }
             }
             OutputFormat format = OutputFormat.createPrettyPrint();
             XMLWriter writer = new XMLWriter(new FileOutputStream(color_night), format);
@@ -208,7 +222,7 @@ public class App {
             for (Element element : elements) {
                 List<Attribute> attributes = element.attributes();
                 for (Attribute attribute : attributes) {
-                    dayStyles.put(attribute.getValue(),element.getStringValue());
+                    dayStyles.put(attribute.getValue(), element.getStringValue());
                 }
             }
 
@@ -261,8 +275,9 @@ public class App {
             if (!file.getName().endsWith(".xml")) {
                 continue;
             }
-            SAXReader saxReader = new SAXReader();
             try {
+                SAXReader saxReader = new SAXReader();
+
                 Document document = saxReader.read(file);
                 Element temp = document.getRootElement();
                 replaceAttr(dayStyles, file, temp);
@@ -270,10 +285,12 @@ public class App {
                 XMLWriter writer = new XMLWriter(new FileOutputStream(file), format);
                 writer.write(document);
                 writer.close();
-
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+            } catch (DocumentException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
 
         }
 
@@ -305,6 +322,7 @@ public class App {
         HashMap<String, String> dayStyles = new HashMap<>();
         File inputXml = new File(themePath);
         SAXReader saxReader = new SAXReader();
+
         try {
             Document document = saxReader.read(inputXml);
             Element rootElement = document.getRootElement();
@@ -321,10 +339,11 @@ public class App {
                     }
                 }
             }
-
         } catch (DocumentException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
+
+
         return dayStyles;
     }
 
@@ -332,6 +351,7 @@ public class App {
         HashMap<String, String> dayStyles = new HashMap<>();
         File inputXml = new File(themePath);
         SAXReader saxReader = new SAXReader();
+
         try {
             Document document = saxReader.read(inputXml);
             Element rootElement = document.getRootElement();
@@ -343,15 +363,18 @@ public class App {
                     if (attribute.getText().equals(themeName)) {
                         List<Element> elements1 = element.elements();
                         for (Element element1 : elements1) {
-                            dayStyles.put(element1.attribute(0).getText(), element1.attribute(1).getText());
+                            if (element1.attributes().size() > 1) {
+                                dayStyles.put(element1.attribute(0).getText(), element1.attribute(1).getText());
+                            }
                         }
                     }
                 }
             }
-
         } catch (DocumentException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
+
+
         return dayStyles;
     }
 }
