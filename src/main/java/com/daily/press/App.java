@@ -17,8 +17,8 @@ public class App {
     private static final String MODULE_PATH = "/Users/lixinke/Documents/workspace/android/daily/LauncherProject/launcher/src/main/res/";
 
     public static void main(String[] args) {
-//        removeIvMaskColor();
-//        replaceDayAttr();
+        removeIvMaskColor();
+        replaceDayAttr();
         createNightFolder();
     }
 
@@ -43,11 +43,8 @@ public class App {
             }
         }
 
-
         Map<String, String> nightStyles = parseStyle(MAIN_THEME, "AppThemeNight");
-
         createNightColor(colors, nightStyles);
-
 
         List<String> drawableValues = new ArrayList<>();
         for (String key : drawables) {
@@ -166,6 +163,11 @@ public class App {
     }
 
     private static void createNightColor(List<String> colors, Map<String, String> nightStyles) {
+
+      Map<String,String> colorMap= parseColor(MODULE_PATH+"values/colors.xml");
+
+
+
         File valueNightFolder = new File(MODULE_PATH + "values-night");
         if (!valueNightFolder.exists()) {
             valueNightFolder.mkdir();
@@ -182,7 +184,8 @@ public class App {
                 Element colorElement = element.addElement("color");
                 colorElement.addAttribute("name", color);
                 String value = nightStyles.get(color);
-                colorElement.setText(value);
+                value =value .replaceAll("\\s*", "");
+                colorElement.setText(colorMap.get(value.split("/")[1]));
             }
             OutputFormat format = OutputFormat.createPrettyPrint();
             XMLWriter writer = new XMLWriter(new FileOutputStream(color_night), format);
@@ -191,6 +194,28 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static Map<String, String> parseColor(String path) {
+        HashMap<String, String> dayStyles = new HashMap<>();
+        File inputXml = new File(path);
+        SAXReader saxReader = new SAXReader();
+        try {
+            Document document = saxReader.read(inputXml);
+            Element rootElement = document.getRootElement();
+
+            List<Element> elements = rootElement.elements();
+            for (Element element : elements) {
+                List<Attribute> attributes = element.attributes();
+                for (Attribute attribute : attributes) {
+                    dayStyles.put(attribute.getValue(),element.getStringValue());
+                }
+            }
+
+        } catch (DocumentException e) {
+            System.out.println(e.getMessage());
+        }
+        return dayStyles;
     }
 
 
