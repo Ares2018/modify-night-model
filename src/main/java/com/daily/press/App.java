@@ -6,28 +6,162 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Hello world!
  */
 public class App {
-    private static final String MAIN_THEME="/Users/lixinke/Documents/workspace/android/monitor/common-core-project/core/src/main/res/values/styles.xml";
-    private static final String REPLACE_LAYOUT_PATH="/Users/lixinke/Documents/workspace/android/monitor/common-core-project/core/src/main/res/layout";
+    private static final String MAIN_THEME = "/Users/lixinke/Documents/workspace/android/daily/MainBuilder/app/src/main/res/values/styles.xml";
+    private static final String MODULE_PATH = "/Users/lixinke/Documents/workspace/android/daily/LauncherProject/launcher/src/main/res/";
+
     public static void main(String[] args) {
-//        replaceIvMask();
-        replaceAttr();
+//        removeIvMaskColor();
+//        replaceDayAttr();
+        createNightFolder();
     }
+
+    private static void createNightFolder() {
+        parseStyleable(MODULE_PATH + "values/attrs.xml");
+
+    }
+
+    private static void parseStyleable(String styleablePath) {
+        Map<String, String> attrs = parseStyleable(styleablePath, "SupportUiMode");
+
+        List<String> colors = new ArrayList<>();
+        List<String> drawables = new ArrayList<>();
+
+        Set<String> keySet = attrs.keySet();
+        for (String key : keySet) {
+            String value = attrs.get(key);
+            if (value.contains("color")) {
+                colors.add(key);
+            } else {
+                drawables.add(key);
+            }
+        }
+
+
+        Map<String, String> nightStyles = parseStyle(MAIN_THEME, "AppThemeNight");
+
+        createNightColor(colors, nightStyles);
+
+
+        List<String> drawableValues = new ArrayList<>();
+        for (String key : drawables) {
+            drawableValues.add(nightStyles.get(key).split("/")[1]);
+        }
+
+        createNightDrawable(drawableValues);
+        createNightMipmap(drawableValues);
+    }
+
+
+    private static void createNightMipmap(List<String> drawableValues) {
+        File nightFolder = new File(MODULE_PATH + "mipmap-night-xxhdpi");
+        if (!nightFolder.exists()) {
+            nightFolder.mkdir();
+        }
+
+        File drawableFolder = new File(MODULE_PATH + "mipmap-xxhdpi");
+        File[] files = drawableFolder.listFiles();
+        for (File file : files) {
+            String name = file.getName();
+            String nameTemp = name.substring(0, name.lastIndexOf("."));
+            if (!name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+                file.renameTo(new File(nightFolder, file.getName()));
+            }
+        }
+
+    }
+
+    private static void createNightDrawable(List<String> drawableValues) {
+        File nightFolder = new File(MODULE_PATH + "drawable-night-xxhdpi");
+        if (!nightFolder.exists()) {
+            nightFolder.mkdir();
+        }
+
+        File drawableFolder = new File(MODULE_PATH + "drawable-xxhdpi");
+        File[] files = drawableFolder.listFiles();
+        for (File file : files) {
+            String name = file.getName();
+            String nameTemp = name.substring(0, name.lastIndexOf("."));
+            if (!name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+                file.renameTo(new File(nightFolder, file.getName()));
+            } else if (name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+                List<String> temp = parseSelector(file, "android:drawable");
+                for (String key : temp) {
+                    for (File sFile : files) {
+                        String sName = sFile.getName();
+                        if (key.equals(sName.substring(0, sName.lastIndexOf(".")))) {
+                            sFile.renameTo(new File(nightFolder, sFile.getName()));
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private static List<String> parseSelector(File inputXml, String themeName) {
+        List<String> drawables = new ArrayList<>();
+        SAXReader saxReader = new SAXReader();
+        try {
+            Document document = saxReader.read(inputXml);
+            Element rootElement = document.getRootElement();
+
+            List<Element> elements = rootElement.elements();
+            for (Element element : elements) {
+                List<Attribute> attributes = element.attributes();
+                for (Attribute attribute : attributes) {
+                    if (attribute.getQualifiedName().equals(themeName)) {
+                        drawables.add(attribute.getValue().split("/")[1]);
+                    }
+                }
+            }
+
+        } catch (DocumentException e) {
+            System.out.println(e.getMessage());
+        }
+        return drawables;
+    }
+
+    private static void createNightColor(List<String> colors, Map<String, String> nightStyles) {
+        File valueNightFolder = new File(MODULE_PATH + "values-night");
+        if (!valueNightFolder.exists()) {
+            valueNightFolder.mkdir();
+        }
+
+        try {
+            File color_night = new File(valueNightFolder, "colors.xml");
+            if (!color_night.exists()) {
+                color_night.createNewFile();
+            }
+            Document document = DocumentHelper.createDocument();
+            Element element = document.addElement("resources");
+            for (String color : colors) {
+                Element colorElement = element.addElement("color");
+                colorElement.addAttribute("name", color);
+                String value = nightStyles.get(color);
+                colorElement.setText(value);
+            }
+            OutputFormat format = OutputFormat.createPrettyPrint();
+            XMLWriter writer = new XMLWriter(new FileOutputStream(color_night), format);
+            writer.write(document);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * 替换图片夜间模式
      */
-    private static void replaceIvMask() {
+    private static void removeIvMaskColor() {
         try {
-            File folder = new File("/Users/lixinke/Documents/workspace/android/monitor/common-core-project/core/src/main/res/layout");
+            File folder = new File(MODULE_PATH + "layout");
             File[] list = folder.listFiles();
             for (File file : list) {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -55,9 +189,9 @@ public class App {
     /**
      * 替换布局中的属性夜间模式
      */
-    private static void replaceAttr() {
-        Map<String, String> styles = parseStyle(MAIN_THEME);
-        File folder = new File(REPLACE_LAYOUT_PATH);
+    private static void replaceDayAttr() {
+        Map<String, String> dayStyles = parseStyle(MAIN_THEME, "AppTheme");
+        File folder = new File(MODULE_PATH + "layout");
         File[] files = folder.listFiles();
 
         for (File file : files) {
@@ -67,10 +201,10 @@ public class App {
             SAXReader saxReader = new SAXReader();
             try {
                 Document document = saxReader.read(file);
-                Element employees = document.getRootElement();
-                replaceAttr(styles,file,employees);
+                Element temp = document.getRootElement();
+                replaceAttr(dayStyles, file, temp);
                 OutputFormat format = OutputFormat.createPrettyPrint();
-                XMLWriter writer = new XMLWriter(new FileOutputStream(file),format);
+                XMLWriter writer = new XMLWriter(new FileOutputStream(file), format);
                 writer.write(document);
                 writer.close();
 
@@ -99,13 +233,13 @@ public class App {
         }
 
         for (Iterator i = element.elementIterator(); i.hasNext(); ) {
-            Element employee = (Element) i.next();
-            replaceAttr(styles,file,employee);
+            Element temp = (Element) i.next();
+            replaceAttr(styles, file, temp);
         }
     }
 
-    private static Map<String, String> parseStyle(String themePath) {
-        HashMap<String, String> styles = new HashMap<>();
+    private static Map<String, String> parseStyle(String themePath, String themeName) {
+        HashMap<String, String> dayStyles = new HashMap<>();
         File inputXml = new File(themePath);
         SAXReader saxReader = new SAXReader();
         try {
@@ -116,10 +250,10 @@ public class App {
             for (Element element : elements) {
                 List<Attribute> attributes = element.attributes();
                 for (Attribute attribute : attributes) {
-                    if (attribute.getText().equals("CoreTheme")) {
+                    if (attribute.getText().equals(themeName)) {
                         List<Element> elements1 = element.elements();
                         for (Element element1 : elements1) {
-                            styles.put(element1.attribute(0).getText(), element1.getText());
+                            dayStyles.put(element1.attribute(0).getText(), element1.getText());
                         }
                     }
                 }
@@ -128,6 +262,33 @@ public class App {
         } catch (DocumentException e) {
             System.out.println(e.getMessage());
         }
-        return styles;
+        return dayStyles;
+    }
+
+    private static Map<String, String> parseStyleable(String themePath, String themeName) {
+        HashMap<String, String> dayStyles = new HashMap<>();
+        File inputXml = new File(themePath);
+        SAXReader saxReader = new SAXReader();
+        try {
+            Document document = saxReader.read(inputXml);
+            Element rootElement = document.getRootElement();
+
+            List<Element> elements = rootElement.elements();
+            for (Element element : elements) {
+                List<Attribute> attributes = element.attributes();
+                for (Attribute attribute : attributes) {
+                    if (attribute.getText().equals(themeName)) {
+                        List<Element> elements1 = element.elements();
+                        for (Element element1 : elements1) {
+                            dayStyles.put(element1.attribute(0).getText(), element1.attribute(1).getText());
+                        }
+                    }
+                }
+            }
+
+        } catch (DocumentException e) {
+            System.out.println(e.getMessage());
+        }
+        return dayStyles;
     }
 }
