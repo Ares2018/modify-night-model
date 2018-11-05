@@ -111,12 +111,16 @@ public class App {
             for (File dir : drawables) {
                 String dirName = dir.getName();
                 String[] dirNames = dirName.split("-");
-                String last = dirNames[dirNames.length - 1];
+                String last = "";
+                if (dirNames.length > 1) {
+                    last = dirNames[dirNames.length - 1];
+                    last = "-" + last;
+                }
                 File[] files = dir.listFiles();
 
                 if (files != null && files.length > 0) {
 
-                    File nightFolder = new File(MODULE_PATH + "drawable-night-" + last);
+                    File nightFolder = new File(MODULE_PATH + "drawable-night" + last);
                     if (!nightFolder.exists()) {
                         nightFolder.mkdir();
                     }
@@ -148,7 +152,7 @@ public class App {
 
         List<String> drawables = new ArrayList<>();
         SAXReader saxReader = new SAXReader();
-        if(!inputXml.exists()){
+        if (!inputXml.exists()) {
             return drawables;
         }
         try {
@@ -190,13 +194,13 @@ public class App {
             Document document = DocumentHelper.createDocument();
             Element element = document.addElement("resources");
             for (String color : colors) {
-                Element colorElement = element.addElement("color");
-                colorElement.addAttribute("name", color);
                 String value = nightStyles.get(color);
                 if (value != null && value.length() > 0) {
                     value = value.replaceAll("\\s*", "");
                     String colorTemp = colorMap.get(value.split("/")[1]);
-                    if (colorTemp != null) {
+                    if (colorTemp != null && !colorTemp.equals("")) {
+                        Element colorElement = element.addElement("color");
+                        colorElement.addAttribute("name", color);
                         colorElement.setText(colorTemp);
                     }
                 }
@@ -250,6 +254,8 @@ public class App {
                         String end = line.substring(line.lastIndexOf("\"") + 1, line.length());
                         line = start + end;
                     }
+
+                    line = line.replaceAll("app:iv_maskColor", "app:maskColor");
                     buffer.append(line);
                     buffer.append("\n");
                 }
@@ -334,7 +340,11 @@ public class App {
                     if (attribute.getText().equals(themeName)) {
                         List<Element> elements1 = element.elements();
                         for (Element element1 : elements1) {
-                            dayStyles.put(element1.attribute(0).getText(), element1.getText());
+                            String name = element1.attribute(0).getText();
+                            name = name.replaceAll("\\s*", "");
+                            String value = element1.getText();
+                            value = value.replaceAll("\\s*", "");
+                            dayStyles.put(name, value);
                         }
                     }
                 }
@@ -364,7 +374,11 @@ public class App {
                         List<Element> elements1 = element.elements();
                         for (Element element1 : elements1) {
                             if (element1.attributes().size() > 1) {
-                                dayStyles.put(element1.attribute(0).getText(), element1.attribute(1).getText());
+                                String name = element1.attribute(0).getText();
+                                name = name.replaceAll("\\s*", "");
+                                String value = element1.attribute(1).getText();
+                                value = value.replaceAll("\\s*", "");
+                                dayStyles.put(name, value);
                             }
                         }
                     }
