@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class App {
     private static final String MAIN_THEME = "/Users/lixinke/Documents/workspace/android/daily/MainBuilder/app/src/main/res/values/styles.xml";
-    private static final String MODULE_PATH = "/Users/lixinke/Documents/workspace/android/daily/CoreProject/core/src/main/res/";
+    private static final String MODULE_PATH = "/Users/lixinke/Documents/workspace/android/daily/UserProject/userCenter/src/main/res/";
 
     public static void main(String[] args) {
         removeIvMaskColor();
@@ -32,7 +32,7 @@ public class App {
                 String name = file.getName();
                 if (name.contains("_night")) {
                     name = name.replace("_night", "");
-                    file.renameTo(new File(folderPath,name));
+                    file.renameTo(new File(folderPath, name));
                 }
             }
         }
@@ -144,16 +144,16 @@ public class App {
                     for (File file : files) {
                         String name = file.getName();
                         String nameTemp = name.substring(0, name.lastIndexOf("."));
-                        if (!name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+                        if (drawableValues.contains(nameTemp)) {
                             file.renameTo(new File(nightFolder, file.getName()));
-                        } else if (name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
-
-                            List<String> temp = parseSelector(file, "android:drawable");
-                            for (String key : temp) {
-                                for (File sFile : files) {
-                                    String sName = sFile.getName();
-                                    if (key.equals(sName.substring(0, sName.lastIndexOf(".")))) {
-                                        sFile.renameTo(new File(nightFolder, sFile.getName()));
+                            if (name.endsWith(".xml") && drawableValues.contains(nameTemp)) {
+                                List<String> temp = parseSelector(file, "android:drawable");
+                                for (String key : temp) {
+                                    for (File sFile : files) {
+                                        String sName = sFile.getName();
+                                        if (key.equals(sName.substring(0, sName.lastIndexOf(".")))) {
+                                            sFile.renameTo(new File(nightFolder, sFile.getName()));
+                                        }
                                     }
                                 }
                             }
@@ -213,12 +213,17 @@ public class App {
                 String value = nightStyles.get(color);
                 if (value != null && value.length() > 0) {
                     value = value.replaceAll("\\s*", "");
-                    String colorTemp = colorMap.get(value.split("/")[1]);
-                    if (colorTemp != null && !colorTemp.equals("")) {
-                        Element colorElement = element.addElement("color");
-                        colorElement.addAttribute("name", color);
-                        colorElement.setText(colorTemp);
+
+                    if(value.split("/").length>1){
+                        String colorTemp = colorMap.get(value.split("/")[1]);
+                        if (colorTemp != null && !colorTemp.equals("")) {
+                            Element colorElement = element.addElement("color");
+                            colorElement.addAttribute("name", color);
+                            colorElement.setText(colorTemp);
+                        }
                     }
+
+
                 }
             }
             OutputFormat format = OutputFormat.createPrettyPrint();
